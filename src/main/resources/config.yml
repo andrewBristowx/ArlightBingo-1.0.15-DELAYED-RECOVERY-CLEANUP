@@ -1,0 +1,167 @@
+# ================================
+# Configuracion general de ArlightBingo
+# ================================
+
+game:
+  card-size: 5              # 5x5 = 25 objetivos
+  team-mode: false           # true = por equipos, false = todos contra todos (FFA)
+  win-condition: POINTS      # POINTS (por defecto, 1 punto por casilla, gana quien tenga mas al acabar el tiempo) | LINE | FULL_CARD | BLACKOUT
+  time-limit-minutes: 60     # 0 = sin limite
+  glow-completed-items: true
+  broadcast-goal-completion: true
+
+  # Sala de espera / auto-inicio
+  min-players-to-start: 2          # cuando hay al menos esta cantidad de jugadores, arranca la cuenta regresiva
+  max-players-scoreboard: 10       # solo para mostrar "Jugadores: X/10" en el scoreboard
+  auto-start-countdown-seconds: 50 # cuenta regresiva de la sala de espera antes de la cuenta final
+  final-countdown-seconds: 5       # cuenta final "5,4,3,2,1" justo antes de que arranque la partida
+  celebration-seconds: 8            # tiempo de festejo (fuegos artificiales + texto) antes de volver todos al lobby
+
+teams:
+  auto-balance: true
+  friendly-fire: false
+
+# ================================
+# Objetivos del carton.
+# Si auto-generate esta en true (recomendado), los objetivos se generan solos
+# a partir de los items/bloques/mobs del juego (no hace falta listarlos a mano),
+# evitando cosas imposibles de conseguir en survival (bedrock, barrier, etc).
+# Si lo pones en false, se usa la lista manual de abajo (goals.manual).
+# ================================
+goals:
+  auto-generate: true
+  auto-generate-pool-size: 150   # cuantos objetivos distintos se generan (mientras mas, mas variedad entre partidas)
+
+  # Items puntuales excluidos de la generacion automatica (namespaced key, ej "minecraft:diamond").
+  # Se pueden agregar en el juego con /bingo blacklist item (sosteniendo el item en la mano).
+  blacklist-items: []
+
+  # Mods enteros excluidos (por su namespace/modid, ej "examplemod"). Se pueden agregar con
+  # /bingo blacklist mod <modid>, o sosteniendo un item del mod y usando /bingo blacklist mod (sin argumento).
+  blacklist-mods: []
+
+  # Si es true (default), la generacion automatica SOLO usa items/bloques/mobs vanilla
+  # (namespace "minecraft"), ignorando todo lo que venga de mods -- la forma mas segura
+  # de evitar objetivos raros o imposibles de items de mods. Ponelo en false (o con
+  # /bingo vanillaonly false) para incluir tambien contenido de mods.
+  vanilla-only: true
+
+  manual:
+    - id: diamante
+      type: ITEM_COLLECT
+      target: minecraft:diamond
+      amount: 1
+      display-name: "Consigue un diamante"
+
+    - id: romper_roble
+      type: BLOCK_BREAK
+      target: minecraft:oak_log
+      amount: 16
+      display-name: "Rompe 16 troncos de roble"
+
+    - id: matar_enderman
+      type: ENTITY_KILL
+      target: minecraft:enderman
+      amount: 1
+      display-name: "Mata a un enderman"
+
+    - id: craftear_mesa_encantar
+      type: CRAFT_ITEM
+      target: minecraft:enchanting_table
+      amount: 1
+      display-name: "Craftea una mesa de encantamientos"
+
+    - id: logro_nether
+      type: ADVANCEMENT
+      target: minecraft:story/enter_the_nether
+      display-name: "Entra al Nether"
+
+    - id: lingote_modded_ejemplo
+      type: ITEM_COLLECT
+      target: examplemod:copper_alloy_ingot
+      amount: 1
+      display-name: "Consigue un lingote de aleacion de cobre (mod)"
+
+    - id: boss_modded_ejemplo
+      type: CUSTOM_TRIGGER
+      display-name: "Derrota al jefe del mod (activacion manual)"
+
+# ================================
+# Manejo del mundo de arena (nativo, sin plugins externos).
+# ================================
+arena-world:
+  # Manejo de mundos 100% nativo (Bukkit puro), NO depende de Multiverse-Core ni de sus
+  # comandos. El "game-world" se crea solo si no existe -- no hace falta prepararlo a mano.
+  enabled: true
+  lobby-world: "legos"        # mundo donde esperan los jugadores antes y después de jugar
+  game-world: "bingo_arena"   # unico mundo donde se juega la partida (se crea solo si no existe)
+  extra-worlds:                # Nether y End propios de la partida; el plugin conecta sus portales nativamente
+    - "bingo_arena_nether"
+    - "bingo_arena_the_end"
+                               # Se puede gestionar tambien con /bingo world addextra|removeextra <mundo>.
+                               # Aplica la misma proteccion anti-borrado que "game-world": si ya existian en el
+                               # disco de antes, hace falta confirmarlos una vez con /bingo world resetarena <mundo>.
+  regen-on-start: true        # si true, borra y vuelve a crear el mundo (seed aleatoria nueva) antes de empezar.
+                               # SEGURIDAD: si "game-world" ya existia en el disco de antes (un mapa a medida)
+                               # y el plugin nunca lo creo, NO se borra automaticamente -- hace falta confirmarlo
+                               # una vez con /bingo world resetarena para que el plugin tome control de el.
+  teleport-players-on-start: true
+  teleport-back-on-end: true  # al terminar, devuelve a todos al lobby-world
+
+# ================================
+# Encuentro especial del End.
+# El plugin invoca manualmente al dragón porque los mundos End personalizados de
+# Arclight pueden generar la isla de YUNG sin inicializar EndDragonFight.
+# Al derrotarlo se habilita un gateway hacia una ciudad/barco garantizados.
+# ================================
+end-encounter:
+  enabled: true
+  dragon-spawn:
+    x: 0
+    y: 110
+    z: 0
+  central-gateway:
+    x: 0
+    y: 90
+    z: 0
+  reward-gateway:
+    x: 1500
+    y: 90
+    z: 0
+
+# ================================
+# Borde de mundo adaptativo. La idea: evitar que el servidor tenga que generar terreno
+# "en vivo" mientras juegan (la mayor causa de lag durante una partida) sin dejar afuera
+# estructuras importantes (stronghold para el End, bastion/fortaleza en el Nether, ciudad
+# del End para elitros). El tamano del borde se AJUSTA SOLO en cada partida segun donde
+# cayeron esas estructuras para esa seed en particular.
+# ================================
+world-border:
+  enabled: true
+  min-size: 400            # tamano minimo del borde (diametro) aunque las estructuras caigan cerca
+  padding: 150              # margen extra mas alla de la estructura mas lejana encontrada
+  max-size: 8192             # permite un radio de 4096 en Overworld y End
+                              # una seed particular tiene la estructura MUY lejos)
+  search-radius: 10000       # que tan lejos buscar cada estructura antes de rendirse
+  announce-structure-coordinates: true  # muestra en el chat las coordenadas encontradas
+  locate-stronghold: true
+  locate-nether-structures: true
+  locate-end-city: true
+
+  # Claves reales registradas por los mods. End City conserva la clave vanilla.
+  structure-keys:
+    overworld:
+      - "betterstrongholds:stronghold"
+    nether:
+      - "betterfortresses:fortress"
+    end:
+      - "minecraft:end_city"
+
+  # La pregeneracion es INDEPENDIENTE del tamano del borde: si una estructura cae muy lejos,
+  # agrandamos el borde para que sea alcanzable, pero SOLO pregeneramos esta zona (mas chica)
+  # cerca del spawn antes de la partida -- si alguien camina hasta la estructura lejana, esa
+  # zona puntual se genera al momento (costo ocasional, no el lag constante que queremos evitar).
+  # Desactivado en Arclight/NeoForge: generar chunks durante la preparación puede
+  # bloquear el hilo principal, especialmente con YUNG's Better End Island.
+  pregenerate: false
+  pregenerate-radius: 128

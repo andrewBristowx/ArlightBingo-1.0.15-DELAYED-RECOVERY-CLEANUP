@@ -1,0 +1,2 @@
+ArlightBingo 1.0.15 DELAYED RECOVERY CLEANUP
+Incluye compatibilidad con YUNG's Better End Island, monitor del dragón y llegada segura al End.
