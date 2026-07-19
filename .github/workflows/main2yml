@@ -1,0 +1,48 @@
+name: Compilar ArlightBingo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar ArlightBingo
+        uses: actions/checkout@v4
+        with:
+          path: BingoPlugin
+
+      - name: Descargar ArlightCore
+        uses: actions/checkout@v4
+        with:
+          repository: andrewBristowx/ArlightCore-1.2.0-SESSION-RECOVERY
+          path: ArlightCore
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: |
+            BingoPlugin/pom.xml
+            ArlightCore/pom.xml
+
+      - name: Instalar ArlightCore
+        working-directory: ArlightCore
+        run: mvn --batch-mode clean install
+
+      - name: Compilar ArlightBingo
+        working-directory: BingoPlugin
+        run: mvn --batch-mode clean package
+
+      - name: Subir JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArlightBingo-1.0.15-DELAYED-RECOVERY-CLEANUP
+          path: BingoPlugin/target/ArlightBingo-1.0.15.jar
+          if-no-files-found: error
