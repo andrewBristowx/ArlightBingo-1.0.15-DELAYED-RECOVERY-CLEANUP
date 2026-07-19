@@ -9,29 +9,39 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Descargar ArlightBingo
+        uses: actions/checkout@v4
         with:
           path: BingoPlugin
-      - uses: actions/checkout@v4
+
+      - name: Descargar ArlightCore 1.2.1
+        uses: actions/checkout@v4
         with:
-          repository: andrewBristowx/ArlightCore-1.2.0-SESSION-RECOVERY
+          repository: andrewBristowx/ArlightCore-1.2.1-CLEAN-RECOVERY
           path: ArlightCore
-      - uses: actions/setup-java@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
           cache-dependency-path: |
             BingoPlugin/pom.xml
             ArlightCore/pom.xml
-      - name: Instalar ArlightCore
+
+      - name: Instalar ArlightCore 1.2.1
         working-directory: ArlightCore
         run: mvn --batch-mode clean install
+
       - name: Compilar ArlightBingo
         working-directory: BingoPlugin
         run: mvn --batch-mode clean package
-      - uses: actions/upload-artifact@v4
+
+      - name: Subir JAR
+        uses: actions/upload-artifact@v4
         with:
           name: ArlightBingo-1.0.15-DELAYED-RECOVERY-CLEANUP
           path: BingoPlugin/target/ArlightBingo-1.0.15.jar
